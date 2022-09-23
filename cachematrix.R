@@ -1,40 +1,55 @@
-rm(list = ls())
-
-makeCacheMatrix <- function(ma = matrix()) {
-  im <- NULL
-  setMatrix <- function(y) {
-    ma <<- y
-    im <<- NULL
+makeCacheMatrix <- function(x = matrix()) 
+{
+  # initialize the matrix to NULL
+  inverse  <- NULL
+  set <- function(y) 
+  {
+    x <<- y
+    inverse <<- NULL
   }
-  getMatrix <- function() ma
-  setinverse <- function(inv) im <<- inv
-  getinverse <- function() im
-  list(setMatrix = setMatrix,
-       getMatrix = getMatrix,
+  get <- function() 
+  {
+    x
+  }
+  
+  setinverse <- function(inv)
+  { 
+    inverse <<- inv
+  }
+  getinverse <- function()
+  {
+    inverse
+  } 
+  list(set = set, get = get,
        setinverse = setinverse,
        getinverse = getinverse)
 }
 
-cacheSolve <- function(x, ...) {
-  im <- x$getinverse()
-  if (!is.null(im)) {
-    message("getting cached inverse matrix")
-    return(im)
+cacheSolve <- function(x, ...) 
+{
+  inverse <- x$getinverse()
+  
+  if(!is.null(inverse)) 
+  {
+    message("getting cached data")
+    return(inverse)
   }
-  data <- x$getMatrix()
-  i <- solve(data, ...)
-  x$setinverse(i)
-  i
+  
+  data <- x$get()
+  inverse <- solve(data, ...)
+  x$setinverse(inverse)
+  inverse
 }
 
-##testing the functions
-B <- matrix(c(1,2,3,4),2,2)
-
-B1 <- makeCacheMatrix(B)
-cacheSolve(B1) #inverse returned after computation, no message 
-
-cacheSolve(B1) #inverse returned from cache and message is printed here
-
-B2 <- makeCacheMatrix(-B)
-cacheSolve(B1)
-cacheSolve(B2)
+test <- function() 
+{
+  my_matrix <- makeCacheMatrix(matrix(1:4, 2, 2))
+  my_matrix$get()
+  my_matrix$getinverse()
+  cacheSolve(my_matrix)
+  my_matrix$set(matrix(c(0,5,99,66), nrow=2, ncol=2)) # Modify existing matrix
+  cacheSolve(my_matrix)   # Computes, caches, and returns new matrix inverse
+  my_matrix$get()         # Returns matrix
+  my_matrix$getinverse()  # Returns matrix inverse    
+  my_matrix$get() %*% my_matrix$getinverse() # returns the identity matrix
+}
